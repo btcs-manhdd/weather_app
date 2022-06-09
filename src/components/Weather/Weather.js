@@ -21,6 +21,8 @@ function Weather() {
     const inputRef = useRef();
     const[dataWeather, setDataWeather] = useState(null);
     const[search, setSearch] = useState(false);
+    const[day, setDay] = useState(true);
+    const[date, setDate] = useState(null);
 
     useEffect(() => {
         const getData = async() => {
@@ -28,15 +30,24 @@ function Weather() {
                 const response = await axios.get(API_WEATHER(city));
                 const data = await response.data;
                 setDataWeather(data);
-                var d = new Date((new Date().getTime()) - (data.timezone*1000));
-                console.log(d.toString(), "timezone: ", data.timezone);
+
+                const seconds = Math.floor(Date.now()) + data.timezone*1000;
+                let day = new Date(seconds);
+                let dayString = day.toLocaleString("en-US",{
+                    timeZone: "UTC",
+                });
+                setDate(day.toUTCString());
+                const time = dayString.slice(-2);
+                setDay(time === "AM");
+
+
                 localStorage.setItem('city', city);
             } catch (error) {
                 console.log(error.message);
             }
         }
         getData()
-    }, [search])
+    }, [search, city])
 
     const handleSearch = () => {
         const value = inputRef.current.value;
@@ -58,16 +69,24 @@ function Weather() {
             </div>
             {dataWeather ?
             ( <div className='d-flex justify-content-center align-items-center flex-column'>
-                    <div className="mt-5">
+                    <div className="mt-5 position-relative">
                         <h2>{dataWeather.name}, {dataWeather.sys.country}</h2>
                         <h6 className='font-weight-light text-warning'>{dataWeather.weather[0].description.toUpperCase()}</h6>
+                        <h5>{date}</h5>
+                        {day ? 
+                        (<i className="position-absolute fa-solid fa-sun"></i>):
+                        <i className="position-absolute fa-solid fa-moon"></i>
+                    }
                     </div>
                     <div className="mt-5 temp position-relative">
                         <span>{dataWeather.main.temp.toFixed()}</span>
                         <span className='temp-icon'>
                             <span className=''>o</span>C
                         </span>
-                        <img className='position-absolute' src={`https://s3-us-west-2.amazonaws.com/s.cdpn.io/162656/${dataWeather.weather[0]["icon"]}.svg`}/>
+                        <img className='position-absolute' 
+                            src={`https://s3-us-west-2.amazonaws.com/s.cdpn.io/162656/${dataWeather.weather[0]["icon"]}.svg`}
+                            alt="icon"
+                        />
                     </div>
                     <div className="mt-5 d-flex list-item">
                         <Item icon="far fa-eye" number={dataWeather.visibility} donvi="m"/>
