@@ -1,18 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
-import API_WEATHER from '../../API.js'
-import axios from 'axios';
+import  * as requestWeather from '../../untils/requestWeather';
+import { getDateByTimeZone } from '../../untils/convertDate'
+import Item from './Item';
 
-
-
-function Item({icon, number, donvi}){
-
-    return(
-        <div className="d-flex flex-column mx-3 mt-2 item">
-            <i className={`${icon}`}></i>
-            <span>{`${number}(${donvi})`|| ''}</span>
-        </div>
-    )
-}
 
 function Weather() {
 
@@ -27,19 +17,19 @@ function Weather() {
     useEffect(() => {
         const getData = async() => {
             try {
-                const response = await axios.get(API_WEATHER(city));
-                const data = await response.data;
+                const data = await requestWeather.get('weather', {
+                    params:{
+                        q: city,
+                        units: 'metric',
+                        appid: 'd78fd1588e1b7c0c2813576ba183a667'
+                    }
+                });
+
                 setDataWeather(data);
 
-                const seconds = Math.floor(Date.now()) + data.timezone*1000;
-                let day = new Date(seconds);
-                let dayString = day.toLocaleString("en-US",{
-                    timeZone: "UTC",
-                });
-                setDate(day.toUTCString());
-                const time = dayString.slice(-2);
-                setDay(time === "AM");
-
+                const {dateString, isDay} = getDateByTimeZone(data.timezone);
+                setDate(dateString);
+                setDay(isDay);
 
                 localStorage.setItem('city', city);
             } catch (error) {
@@ -68,7 +58,7 @@ function Weather() {
                 </div>
             </div>
             {dataWeather ?
-            ( <div className='d-flex justify-content-center align-items-center flex-column'>
+            ( <div className='content d-flex justify-content-center align-items-center flex-column'>
                     <div className="mt-5 position-relative">
                         <h2>{dataWeather.name}, {dataWeather.sys.country}</h2>
                         <h6 className='font-weight-light text-warning'>{dataWeather.weather[0].description.toUpperCase()}</h6>

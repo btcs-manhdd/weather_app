@@ -15,7 +15,9 @@
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), 
   url('https://dulichkhatvongviet.com/wp-content/uploads/2020/08/ha_giang.jpg') no-repeat center/cover;
 }
-
+.content{
+  width: 100%;
+}
 .temp{
   margin-top: 32px;
   width: 80%;
